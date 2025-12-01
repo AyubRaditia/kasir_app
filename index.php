@@ -82,6 +82,22 @@ require_once 'config.php';
             color: #ff6a00;
         }
 
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #ff6a00;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 3px;
+        }
+
         .container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -604,13 +620,37 @@ require_once 'config.php';
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
 
-            .navbar-menu {
-                gap: 0.5rem;
-                font-size: 0.9rem;
+            .hamburger {
+                display: flex;
             }
-            
+
+            .navbar-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background-color: white;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0,0,0,0.05);
+                padding: 2rem 0;
+                gap: 0.5rem;
+                z-index: 99;
+            }
+
+            .navbar-menu.active {
+                left: 0;
+            }
+
             .navbar-menu a {
-                padding: 0.4rem 0.8rem;
+                display: block;
+                padding: 1rem;
+                border-radius: 0;
+            }
+
+            .navbar-menu li {
+                margin: 0;
             }
 
             .notification {
@@ -626,7 +666,12 @@ require_once 'config.php';
         <div class="navbar-brand">
             <i class="fas fa-cash-register"></i> POS UMKM
         </div>
-        <ul class="navbar-menu">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="navbar-menu" id="navbarMenu">
             <li><a href="index.php" class="active"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
             <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
@@ -734,6 +779,11 @@ require_once 'config.php';
 
     <script>
         let cart = [];
+
+        function toggleMenu() {
+            const navbarMenu = document.getElementById('navbarMenu');
+            navbarMenu.classList.toggle('active');
+        }
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
