@@ -199,6 +199,13 @@ mysqli_stmt_execute($detail_stmt);
             box-shadow: 0 8px 20px rgba(255, 106, 0, 0.4);
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
         .back-btn {
             flex: 1;
             padding: 15px;
@@ -233,6 +240,11 @@ mysqli_stmt_execute($detail_stmt);
                 box-shadow: none;
                 border-radius: 0;
             }
+
+            .print-btn, .action-buttons, .back-btn {
+                display: none;
+            }
+
             .header {
                 border-bottom-color: #333;
             }
@@ -315,6 +327,12 @@ mysqli_stmt_execute($detail_stmt);
         <button class="print-btn" onclick="window.print()">
             <i class="fas fa-print"></i> Cetak Struk
         </button>
+        
+        <div class="action-buttons">
+            <a href="javascript:history.back()" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+        </div>
     </div>
 </body>
 </html>
