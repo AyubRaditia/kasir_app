@@ -112,6 +112,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
             color: #ff6a00;
         }
 
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #ff6a00;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 3px;
+        }
+
         .container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -175,6 +191,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
             gap: 0.5rem;
         }
 
+        .card-title i {
+            color: #ff6a00;
+        }
+
         .btn-add {
             padding: 0.75rem 1.5rem;
             background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
@@ -197,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
         }
 
         .btn-add:disabled {
-            background: #ccc;
+            background: #cccccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -283,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
         }
 
         .btn-edit:disabled {
-            background: #ccc;
+            background: #cccccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -420,12 +440,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
         }
 
         @media (max-width: 768px) {
-            .table {
-                font-size: 0.9rem;
+            .hamburger {
+                display: flex;
             }
 
             .navbar-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background-color: white;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0,0,0,0.05);
+                padding: 2rem 0;
                 gap: 0.5rem;
+                z-index: 99;
+            }
+
+            .navbar-menu.active {
+                left: 0;
+            }
+
+            .navbar-menu a {
+                display: block;
+                padding: 1rem;
+                border-radius: 0;
+            }
+
+            .navbar-menu li {
+                margin: 0;
+            }
+
+            .table {
                 font-size: 0.9rem;
             }
 
@@ -440,7 +488,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
         <div class="navbar-brand">
             <i class="fas fa-cash-register"></i> POS UMKM
         </div>
-        <ul class="navbar-menu">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="navbar-menu" id="navbarMenu">
             <li><a href="index.php"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
             <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
@@ -576,6 +629,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
     </div>
 
     <script>
+        function toggleMenu() {
+            const navbarMenu = document.getElementById('navbarMenu');
+            navbarMenu.classList.toggle('active');
+        }
+
         function openAddModal() {
             document.getElementById('addModal').classList.add('active');
         }
