@@ -1,39 +1,41 @@
 <?php
 require_once 'config.php';
 
- $penjualan_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$penjualan_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($penjualan_id == 0) {
     die("ID penjualan tidak valid");
 }
 
-// Get transaction data
- $query = "SELECT p.*, pel.nama_pelanggan, pel.nomor_telepon 
+// Get transaction data with COALESCE for pelanggan umum
+$query = "SELECT p.*, 
+          COALESCE(pel.nama_pelanggan, 'Pelanggan Umum') as nama_pelanggan, 
+          pel.nomor_telepon 
           FROM penjualan p 
           LEFT JOIN pelanggan pel ON p.pelanggan_id = pel.pelanggan_id 
           WHERE p.penjualan_id = ?";
- $stmt = mysqli_prepare($conn, $query);
+$stmt = mysqli_prepare($conn, $query);
 mysqli_stmt_bind_param($stmt, "i", $penjualan_id);
 mysqli_stmt_execute($stmt);
- $result = mysqli_stmt_get_result($stmt);
- $penjualan = mysqli_fetch_assoc($result);
+$result = mysqli_stmt_get_result($stmt);
+$penjualan = mysqli_fetch_assoc($result);
 
 if (!$penjualan) {
     die("Data penjualan tidak ditemukan");
 }
 
 // Get transaction details
- $detail_query = "SELECT dp.*, pr.NamaProduk, pr.Harga 
+$detail_query = "SELECT dp.*, pr.NamaProduk, pr.Harga 
                  FROM detail_penjualan dp 
-                 JOIN produk pr ON dp.produk_id = pr.ProdukID 
+                 JOIN produk pr ON dp.produk_id = pr.produk_id
                  WHERE dp.penjualan_id = ?";
- $detail_stmt = mysqli_prepare($conn, $detail_query);
+$detail_stmt = mysqli_prepare($conn, $detail_query);
 mysqli_stmt_bind_param($detail_stmt, "i", $penjualan_id);
 mysqli_stmt_execute($detail_stmt);
- $detail_result = mysqli_stmt_get_result($detail_stmt);
+$detail_result = mysqli_stmt_get_result($detail_stmt);
 
 // Calculate change
- $kembalian = $penjualan['jumlah_bayar'] - $penjualan['total_harga'];
+$kembalian = $penjualan['jumlah_bayar'] - $penjualan['total_harga'];
 ?>
 
 <!DOCTYPE html>
@@ -279,7 +281,7 @@ mysqli_stmt_execute($detail_stmt);
                 </div>
                 <div class="info-row">
                     <span>Pelanggan:</span>
-                    <span><?php echo $penjualan['nama_pelanggan'] ? htmlspecialchars($penjualan['nama_pelanggan']) : 'Pelanggan Umum'; ?></span>
+                    <span><?php echo htmlspecialchars($penjualan['nama_pelanggan']); ?></span>
                 </div>
             </div>
 
