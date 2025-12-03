@@ -569,6 +569,16 @@ require_once 'config.php';
             color: white;
         }
 
+        .notification-icon.success {
+            background: linear-gradient(135deg, #00d68f 0%, #00a85a 100%);
+            color: white;
+        }
+
+        .notification-icon.error {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+            color: white;
+        }
+
         .notification-content {
             flex: 1;
         }
@@ -672,11 +682,11 @@ require_once 'config.php';
             <span></span>
         </div>
         <ul class="navbar-menu" id="navbarMenu">
-            <li><a href="index.php" class="active"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
+            <li><a href="index.php" class="active"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="stok.php"><i class="fas fa-boxes"></i> Stok</a></li>
             <li><a href="pelanggan.php"><i class="fas fa-users"></i> Pelanggan</a></li>
+            <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
             <?php if (isAdmin()): ?>
                 <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a><span class="admin-badge">Admin</span></li>
             <?php else: ?>
@@ -785,11 +795,28 @@ require_once 'config.php';
             navbarMenu.classList.toggle('active');
         }
 
-        function showNotification(message) {
+        function showNotification(title, message, type = 'warning') {
             const notification = document.getElementById('notification');
+            const titleElement = document.querySelector('.notification-title');
             const messageElement = document.getElementById('notificationMessage');
+            const iconElement = document.querySelector('.notification-icon i');
+            const iconContainer = document.querySelector('.notification-icon');
             
+            titleElement.textContent = title;
             messageElement.textContent = message;
+            
+            // Update icon and color based on notification type
+            if (type === 'success') {
+                iconElement.className = 'fas fa-check-circle';
+                iconContainer.className = 'notification-icon success';
+            } else if (type === 'error') {
+                iconElement.className = 'fas fa-exclamation-circle';
+                iconContainer.className = 'notification-icon error';
+            } else { // default warning
+                iconElement.className = 'fas fa-exclamation-triangle';
+                iconContainer.className = 'notification-icon warning';
+            }
+            
             notification.classList.add('show');
             
             // Auto-hide after 5 seconds
@@ -804,18 +831,18 @@ require_once 'config.php';
         }
 
         function addToCart(product) {
-            const existingItem = cart.find(item => item.ProdukID === product.ProdukID);
+            const existingItem = cart.find(item => item.produk_id === product.produk_id);
             
             if (existingItem) {
                 if (existingItem.quantity < product.Stok) {
                     existingItem.quantity++;
                 } else {
-                    showNotification(`Maaf, stok untuk "${product.NamaProduk}" hanya tersisa ${product.Stok} unit.`);
+                    showNotification('Stok Tidak Mencukupi', `Maaf, stok untuk "${product.NamaProduk}" hanya tersisa ${product.Stok} unit.`);
                     return;
                 }
             } else {
                 cart.push({
-                    ProdukID: product.ProdukID,
+                    produk_id: product.produk_id,
                     NamaProduk: product.NamaProduk,
                     Harga: parseFloat(product.Harga),
                     Stok: parseInt(product.Stok),
@@ -834,7 +861,7 @@ require_once 'config.php';
                 item.quantity = newQty;
                 renderCart();
             } else if (newQty > item.Stok) {
-                showNotification(`Maaf, stok untuk "${item.NamaProduk}" hanya tersisa ${item.Stok} unit.`);
+                showNotification('Stok Tidak Mencukupi', `Maaf, stok untuk "${item.NamaProduk}" hanya tersisa ${item.Stok} unit.`);
             }
         }
 
@@ -913,7 +940,7 @@ require_once 'config.php';
             const bayar = parseFloat(document.getElementById('jumlahBayar').value) || 0;
             
             if (bayar < total) {
-                showNotification('Jumlah bayar kurang dari total belanja!');
+                showNotification('Pembayaran Tidak Mencukupi', 'Jumlah bayar kurang dari total belanja!', 'error');
                 return;
             }
             
@@ -933,7 +960,7 @@ require_once 'config.php';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showNotification('Transaksi berhasil!');
+                    showNotification('Transaksi Berhasil', 'Transaksi Anda telah berhasil diproses.', 'success');
                     // Open receipt in new window
                     window.open('cetak_nota.php?id=' + data.penjualan_id, '_blank');
                     // Reset cart
@@ -942,11 +969,11 @@ require_once 'config.php';
                     closePaymentModal();
                     document.getElementById('pelangganSelect').value = '0';
                 } else {
-                    showNotification('Transaksi gagal: ' + data.message);
+                    showNotification('Transaksi Gagal', 'Transaksi gagal: ' + data.message, 'error');
                 }
             })
             .catch(error => {
-                showNotification('Terjadi kesalahan: ' + error);
+                showNotification('Terjadi Kesalahan', 'Terjadi kesalahan: ' + error, 'error');
             });
         }
     </script>
