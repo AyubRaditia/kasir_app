@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
             border-collapse: collapse;
         }
 
-        .table thead {
+        .thead {
             background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
             color: white;
         }
@@ -517,11 +517,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isAdmin()) {
             <span></span>
         </div>
         <ul class="navbar-menu" id="navbarMenu">
-            <li><a href="index.php"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
+            <li><a href="index.php"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="stok.php"><i class="fas fa-boxes"></i> Stok</a></li>
             <li><a href="pelanggan.php" class="active"><i class="fas fa-users"></i> Pelanggan</a></li>
+            <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
             <?php if (isAdmin()): ?>
                 <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a><span class="admin-badge">Admin</span></li>
             <?php else: ?>
