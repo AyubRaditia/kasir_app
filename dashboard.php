@@ -2,30 +2,31 @@
 require_once 'config.php';
 
 // Get total revenue
- $query_revenue = "SELECT SUM(total_harga) as total FROM penjualan";
- $result_revenue = mysqli_query($conn, $query_revenue);
- $revenue = mysqli_fetch_assoc($result_revenue)['total'] ?? 0;
+$query_revenue = "SELECT SUM(total_harga) as total FROM penjualan";
+$result_revenue = mysqli_query($conn, $query_revenue);
+$revenue = mysqli_fetch_assoc($result_revenue)['total'] ?? 0;
 
 // Get total transactions
- $query_trans = "SELECT COUNT(*) as total FROM penjualan";
- $result_trans = mysqli_query($conn, $query_trans);
- $total_transactions = mysqli_fetch_assoc($result_trans)['total'];
+$query_trans = "SELECT COUNT(*) as total FROM penjualan";
+$result_trans = mysqli_query($conn, $query_trans);
+$total_transactions = mysqli_fetch_assoc($result_trans)['total'];
 
-// Get recent transactions
- $query_recent = "SELECT p.*, pel.nama_pelanggan 
+// Get recent transactions with COALESCE
+$query_recent = "SELECT p.*, 
+                 COALESCE(pel.nama_pelanggan, 'Pelanggan Umum') as nama_pelanggan 
                  FROM penjualan p 
                  LEFT JOIN pelanggan pel ON p.pelanggan_id = pel.pelanggan_id 
                  ORDER BY p.penjualan_id DESC LIMIT 5";
- $result_recent = mysqli_query($conn, $query_recent);
+$result_recent = mysqli_query($conn, $query_recent);
 
 // Get last 7 days sales
- $query_7days = "SELECT DATE(tanggal_penjualan) as tanggal, SUM(total_harga) as total 
+$query_7days = "SELECT DATE(tanggal_penjualan) as tanggal, SUM(total_harga) as total 
                 FROM penjualan 
                 WHERE tanggal_penjualan >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
                 GROUP BY DATE(tanggal_penjualan)
                 ORDER BY tanggal ASC";
- $result_7days = mysqli_query($conn, $query_7days);
- $sales_data = [];
+$result_7days = mysqli_query($conn, $query_7days);
+$sales_data = [];
 while ($row = mysqli_fetch_assoc($result_7days)) {
     $sales_data[] = $row;
 }
@@ -180,13 +181,6 @@ while ($row = mysqli_fetch_assoc($result_7days)) {
             justify-content: center;
             font-size: 2rem;
             color: white;
-        }
-
-        .stat-icon.revenue {
-            background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
-        }
-
-        .stat-icon.transactions {
             background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
         }
 
@@ -287,6 +281,18 @@ while ($row = mysqli_fetch_assoc($result_7days)) {
             margin-left: 1rem;
         }
 
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 1024px) {
             .content-grid {
                 grid-template-columns: 1fr;
@@ -348,11 +354,11 @@ while ($row = mysqli_fetch_assoc($result_7days)) {
             <span></span>
         </div>
         <ul class="navbar-menu" id="navbarMenu">
-            <li><a href="index.php"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="dashboard.php" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
+            <li><a href="index.php"><i class="fas fa-shopping-cart"></i> Kasir</a></li>
             <li><a href="stok.php"><i class="fas fa-boxes"></i> Stok</a></li>
             <li><a href="pelanggan.php"><i class="fas fa-users"></i> Pelanggan</a></li>
+            <li><a href="riwayat.php"><i class="fas fa-history"></i> Riwayat</a></li>
             <?php if (isAdmin()): ?>
                 <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a><span class="admin-badge">Admin</span></li>
             <?php else: ?>
@@ -366,7 +372,7 @@ while ($row = mysqli_fetch_assoc($result_7days)) {
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon revenue">
+                <div class="stat-icon">
                     <i class="fas fa-money-bill-wave"></i>
                 </div>
                 <div class="stat-info">
@@ -376,7 +382,7 @@ while ($row = mysqli_fetch_assoc($result_7days)) {
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon transactions">
+                <div class="stat-icon">
                     <i class="fas fa-receipt"></i>
                 </div>
                 <div class="stat-info">
@@ -391,17 +397,24 @@ while ($row = mysqli_fetch_assoc($result_7days)) {
                 <h2 class="card-title">
                     <i class="fas fa-clock"></i> Transaksi Terbaru
                 </h2>
-                <?php while ($trans = mysqli_fetch_assoc($result_recent)): ?>
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <h4>#<?php echo str_pad($trans['penjualan_id'], 6, '0', STR_PAD_LEFT); ?></h4>
-                            <p><?php echo $trans['nama_pelanggan'] ?? 'Pelanggan Umum'; ?> • <?php echo date('d M Y', strtotime($trans['tanggal_penjualan'])); ?></p>
+                <?php if (mysqli_num_rows($result_recent) > 0): ?>
+                    <?php while ($trans = mysqli_fetch_assoc($result_recent)): ?>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>#<?php echo str_pad($trans['penjualan_id'], 6, '0', STR_PAD_LEFT); ?></h4>
+                                <p><?php echo htmlspecialchars($trans['nama_pelanggan']); ?> • <?php echo date('d M Y', strtotime($trans['tanggal_penjualan'])); ?></p>
+                            </div>
+                            <div class="transaction-price">
+                                Rp <?php echo number_format($trans['total_harga'], 0, ',', '.'); ?>
+                            </div>
                         </div>
-                        <div class="transaction-price">
-                            Rp <?php echo number_format($trans['total_harga'], 0, ',', '.'); ?>
-                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <p>Belum ada transaksi</p>
                     </div>
-                <?php endwhile; ?>
+                <?php endif; ?>
             </div>
 
             <div class="card">
